@@ -20,30 +20,54 @@ import { useRef } from "react";
 const messages = [];
 
 function Chat() {
-  const [chatWithUsername, setChatWithUsername] = useState('');
+  const [chatWithUsername, setChatWithUsername] = useState("");
   const [msg, setMsg] = useState("");
   const [msgArray, setMsgArray] = useState(messages);
+  const messageRef = useRef(null);
+
   const chatWithUsernameGen = () => {
     let randomValue = Math.floor(Math.random() * 10000);
-    setChatWithUsername('username-' + randomValue )
-  }
+    setChatWithUsername("username-" + randomValue);
+  };
+
   const handleMsgSubmit = (e) => {
     e.preventDefault();
     const d = new Date().toLocaleTimeString();
-    let tempMsgArray = [...msgArray, { message: msg, from: "me", dateSent: d }];
-    setMsgArray(tempMsgArray);
-    setMsg("");
+    if (msg) {
+      let tempMsgArray = [
+        ...msgArray,
+        { message: msg, from: "me", dateSent: d },
+      ];
+      setMsgArray(tempMsgArray);
+      setMsg("");
+    } else {
+      setMsg('');
+    }
   };
-  //focus scrollTheBox incompleted
+
+  useEffect(() => {
+    chatWithUsernameGen();
+  }, []);
+
   
-  useEffect(() => {chatWithUsernameGen()}, [])
+  useEffect(() => {
+    messageRef.current?.scrollIntoView({behavior: 'smooth'});
+    console.log('hello wolrd')
+  }, [msgArray]);
+
 
   return (
     <Flex w="full" flexDirection="column" h="100vh">
       <HStack p={4} borderBottomColor="gray.100">
         <Input variant="filled" rounded="full" placeholder="Search friends" />
       </HStack>
-      <Flex px={6} overflowY="auto" flexDirection="column" flex={1}>
+      <Flex
+        px={6}
+        overflowY="auto"
+        flexDirection="column"
+        flex={1}
+        
+      >
         <Stat mt={6}>
           <StatLabel color="gray.500">Chatting with</StatLabel>
           <StatNumber>{chatWithUsername}</StatNumber>
@@ -51,6 +75,7 @@ function Chat() {
         {msgArray.map((data, index) => {
           return <ChatBubble key={index} {...data} />;
         })}
+        <div ref={messageRef} />
       </Flex>
       <Flex
         as="form"
