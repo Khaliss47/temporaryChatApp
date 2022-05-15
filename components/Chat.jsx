@@ -11,15 +11,27 @@ import {
   IconButton,
   Icon,
   shouldForwardProp,
+  InputGroup,
+  InputLeftElement,
+  Button,
+  Avatar,
 } from "@chakra-ui/react";
 import { IoMdSend } from "react-icons/io";
 import { useState } from "react";
 import { useEffect } from "react";
 import { useRef } from "react";
+import { HiOutlineLogout } from "react-icons/hi";
+import { MdOutlineSearch } from "react-icons/md";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+import { useAuth } from "../contexts/AuthContext";
 
 const messages = [];
 
 function Chat() {
+  const { user } = useAuth();
+  console.log(user);
+
   const [chatWithUsername, setChatWithUsername] = useState("");
   const [msg, setMsg] = useState("");
   const [msgArray, setMsgArray] = useState(messages);
@@ -41,7 +53,7 @@ function Chat() {
       setMsgArray(tempMsgArray);
       setMsg("");
     } else {
-      setMsg('');
+      setMsg("");
     }
   };
 
@@ -49,25 +61,37 @@ function Chat() {
     chatWithUsernameGen();
   }, []);
 
-  
   useEffect(() => {
-    messageRef.current?.scrollIntoView({behavior: 'smooth'});
-    console.log('hello wolrd')
+    messageRef.current?.scrollIntoView({ behavior: "smooth" });
+    console.log("hello wolrd");
   }, [msgArray]);
-
 
   return (
     <Flex w="full" flexDirection="column" h="100vh">
       <HStack p={4} borderBottomColor="gray.100">
-        <Input variant="filled" rounded="full" placeholder="Search friends" />
-      </HStack>
-      <Flex
-        px={6}
-        overflowY="auto"
-        flexDirection="column"
-        flex={1}
+        <VStack>
+        <Avatar name={user.displayName} src={user.photoURL} />
+        </VStack>
         
-      >
+        <InputGroup>
+          <InputLeftElement
+            pointerEvents="none"
+            children={<MdOutlineSearch size={22} color="gray.300" />}
+          />
+          <Input variant="filled" rounded="full" placeholder="Search friends" />
+        </InputGroup>
+
+        <Button
+          onClick={() => {
+            signOut(auth);
+          }}
+          colorScheme="teal"
+          rightIcon={<HiOutlineLogout />}
+        >
+          Log Out
+        </Button>
+      </HStack>
+      <Flex px={6} overflowY="auto" flexDirection="column" flex={1}>
         <Stat mt={6}>
           <StatLabel color="gray.500">Chatting with</StatLabel>
           <StatNumber>{chatWithUsername}</StatNumber>

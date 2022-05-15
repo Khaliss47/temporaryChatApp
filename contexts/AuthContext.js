@@ -13,22 +13,19 @@ export const AuthProvider = ({ children }) => {
   const router = useRouter();
 
   useEffect(() => {
-    
-      onAuthStateChanged((user) => {
-          if (user) {
-            setUser(user)
-            setLoading(false);
-            router.push('/chats')
-          }
-          else {
-              setLoading(false);
-              router.push('/');
-          }
-      });
-    
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+        setLoading(false);
+        router.push("/chats");
+      } else {
+        setLoading(false);
+        router.push("/");
+      }
+    });
   }, [user, router.asPath]);
 
   const value = { user };
 
-  return <AuthContext.Provider>{!loading && children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };

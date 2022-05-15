@@ -4,9 +4,11 @@ import { AuthProvider } from "../contexts/AuthContext";
 function MyApp({ Component, pageProps }) {
   return (
     
-      <ChakraProvider>
-        <Component {...pageProps} />
-      </ChakraProvider>
+      <AuthProvider>
+        <ChakraProvider>
+          <Component {...pageProps} />
+        </ChakraProvider>
+      </AuthProvider>
     
   )
 }
