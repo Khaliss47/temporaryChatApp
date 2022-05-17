@@ -9,12 +9,12 @@ import {
   Box,
   Text,
   IconButton,
-  Icon,
-  shouldForwardProp,
   InputGroup,
   InputLeftElement,
   Button,
   Avatar,
+  Badge,
+  Tooltip,
 } from "@chakra-ui/react";
 import { IoMdSend } from "react-icons/io";
 import { useState } from "react";
@@ -26,44 +26,35 @@ import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { db } from "../firebase";
-import { addDoc, collection, orderBy } from "firebase/firestore";
-import { getDocs } from "firebase/firestore";
-import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { query, where } from "firebase/firestore";
+import { addDoc, collection } from "firebase/firestore";
 import { serverTimestamp } from "firebase/firestore";
+import Image from "next/image";
 
-
-
-function Chat({generatedKey}) {
+function Chat({ generatedKey }) {
   const { user } = useAuth();
-  
+
   // ---------getting data--------//
 
-  const messagesRef = collection('messages');
-  const query = query(messagesRef, where('keygen', '==', generatedKey), orderBy('createdAt'))
-
-  const [messages] = useCollectionData(query, {idField: 'id'})
+  const [messages, setMessages] = useState([]);
 
   // ------------getting data---------//
-  const [msgCount, setMsgCount] = useState(0);
   const [chatWithUsername, setChatWithUsername] = useState("");
   const [msg, setMsg] = useState("");
   const lastMessageRef = useRef(null);
-
-  const chatWithUsernameGen = () => {
-    let randomValue = Math.floor(Math.random() * 10000);
-    setChatWithUsername("username-" + randomValue);
-  };
 
   // -------------handling the submit----------//
   const handleMsgSubmit = (e) => {
     e.preventDefault();
     const d = new Date().toLocaleTimeString();
     if (msg) {
-      const colRef = collection(db, 'messages');
-      addDoc(colRef, {message: msg, from: user.uid, createdAt: serverTimestamp(), keygen: generatedKey})
+      const colRef = collection(db, "messages");
+      addDoc(colRef, {
+        message: msg,
+        uid: user.uid,
+        createdAt: serverTimestamp(),
+        keygen: generatedKey,
+      });
       setMsg("");
-      setMsgCount(msgCount+1)
     } else {
       setMsg("");
     }
@@ -71,48 +62,75 @@ function Chat({generatedKey}) {
   // -------------------handling the submit---------//
 
   useEffect(() => {
-    chatWithUsernameGen();
-  }, []);
-
-  useEffect(() => {
     lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
-    <Flex w="full" flexDirection="column" h="100vh">
+    <Flex w="full" flexDirection="column" h="100vh" bg="#232c38">
       <HStack p={4} borderBottomColor="gray.100">
-        <VStack>
-        <Avatar name={user.displayName} src={user.photoURL} />
-        </VStack>
-        
+        <Tooltip hasArrow bg="gray.400" color="black" label={user.displayName}>
+          <Avatar
+            name={user.displayName}
+            src={user.photoURL}
+            cursor="pointer"
+          />
+        </Tooltip>
+
         <InputGroup>
           <InputLeftElement
             pointerEvents="none"
             children={<MdOutlineSearch size={22} color="gray.300" />}
           />
-          <Input variant="filled" rounded="full" placeholder="Search friends" />
+          <Input
+            variant="filled"
+            fontFamily="poppins"
+            placeholder="Search friends . . ."
+            borderRadius="20px"
+            _focus={0}
+            fontWeight={600}
+            _placeholder={{ opacity: 0.5, fontWeight: 400 }}
+          />
         </InputGroup>
 
         <Button
           onClick={() => {
             signOut(auth);
           }}
-          colorScheme="teal"
-          rightIcon={<HiOutlineLogout />}
-        >
-          Log Out
-        </Button>
+          _focus={0}
+          borderRadius="20px"
+          bg="#0084ff"
+          color="#fff"
+          _hover={{ bg: "#0077e6" }}
+          rightIcon={<HiOutlineLogout size="23px" />}
+        ></Button>
       </HStack>
       <Flex px={6} overflowY="auto" flexDirection="column" flex={1}>
         <Stat mt={6}>
-          <StatLabel color="gray.500">Chatting with</StatLabel>
-          <StatNumber>{chatWithUsername}</StatNumber>
+          <StatLabel
+            fontFamily="Poppins"
+            fontWeight="700"
+            color="#fff"
+            fontSize="2xl"
+          >
+            Free Chat App
+          </StatLabel>
+          <StatNumber
+            fontFamily="Poppins"
+            fontWeight="400"
+            color="#fff"
+            fontSize="md"
+          >
+            You Can Chat With Your Friends Using This Key{" "}
+            <Badge colorScheme="green">{generatedKey}</Badge>
+          </StatNumber>
         </Stat>
-        {messages.map((data) => {
-          return <ChatBubble key={data.id} {...data} />;
-        })}
+        {messages &&
+          messages.map((data) => {
+            return <ChatBubble key={data.id} {...data} />;
+          })}
         <div ref={lastMessageRef} />
       </Flex>
+
       <Flex
         as="form"
         pl={4}
@@ -124,15 +142,19 @@ function Chat({generatedKey}) {
       >
         <Input
           variant="unstyled"
-          placeholder="Typer your message"
+          placeholder="Type your message . . ."
+          color="#fff"
+          _placeholder={{ color: "inherit", opacity: 0.5, fontWeight: 400 }}
+          fontFamily="poppins"
+          fontWeight={600}
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
         />
         <IconButton
-          colorScheme="blue"
-          variant="ghost"
-          icon={<IoMdSend />}
+          icon={<IoMdSend size="25px" color="#0084ff" />}
           type="submit"
+          bg="transparent"
+          _focus={0}
         />
       </Flex>
     </Flex>
@@ -140,7 +162,7 @@ function Chat({generatedKey}) {
 }
 // just Done with chat bubble
 function ChatBubble({ message, uid, createdAt }) {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const isMe = uid === user.uid;
   const alignment = isMe ? "flex-end" : "flex-start";
   const bottomRightRadius = isMe ? 0 : 32;

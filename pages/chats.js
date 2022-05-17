@@ -21,7 +21,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 
 function index() {
-  const [generatedKey, setGeneratedKey] = useState("");
+  const [generatedKey, setGeneratedKey] = useState();
   const { isOpen, onOpen, onClose } = useDisclosure(true);
   const { hasCopied, onCopy } = useClipboard(generatedKey);
   const toast = useToast();
@@ -69,19 +69,26 @@ function index() {
       <Chat generatedKey={generatedKey} />
       <Modal isOpen={isOpen}>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Modal Title</ModalHeader>
+        <ModalContent bgGradient='linear(to-r, #02AAB0, #00CDAC)'>
+          <ModalHeader fontFamily='Poppins' color='#fff' fontWeight={700}>Dialog Generator</ModalHeader>
           <ModalBody>
-            <Text mb={6}>Please Generate or Use a key to join a chat room</Text>
+            <Text mb={6} fontFamily='Poppins' fontWeight={400} color='#fff'>Please Generate or Use a key to join a chat room</Text>
             <VStack as="form" onSubmit={handleSubmit}>
               <InputGroup>
                 <Input
                   onChange={(e) => setGeneratedKey(e.target.value)}
                   placeHolder="Enter Or Genrate a key"
+                  variant='flushed'
+                  _focus={0}
+                  _placeholder={{ color: 'inherit' }}
                   value={generatedKey}
+                  fontFamily='Poppins'
+                  fontWeight={600}
+                  opacity={0.9}
+                  color="#fff"
                 />
                 <InputRightElement width="4.5rem">
-                  <Button onClick={onCopy} size="sm">
+                  <Button onClick={onCopy} size="sm" fontFamily='poppins' fontWeight={700} _focus={{ outline: 0 }} bg="transparent" _hover={{opacity: 0.5}} color='#fff'>
                     {hasCopied ? "Copied" : "Copy"}
                   </Button>
                 </InputRightElement>
@@ -90,10 +97,10 @@ function index() {
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={generateKey}>
+            <Button mr={3} onClick={generateKey} bg="#fff" fontFamily='Poppins' _focus={{ outline: 0 }} bg="transparent" color='#fff' _hover={{ border: '1px solid #fff'}}>
               Generate Key
             </Button>
-            <Button variant="ghost" onClick={handleClose}>
+            <Button onClick={handleClose} _focus={{ outline: 0 }} fontFamily='Poppins' color='#fff' bg="transparent" _hover={{ border: '1px solid #fff' }}>
               Join Room
             </Button>
           </ModalFooter>
