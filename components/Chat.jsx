@@ -25,46 +25,58 @@ import { MdOutlineSearch } from "react-icons/md";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
+import { db } from "../firebase";
+import { addDoc, collection, orderBy } from "firebase/firestore";
+import { getDocs } from "firebase/firestore";
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { query, where } from "firebase/firestore";
+import { serverTimestamp } from "firebase/firestore";
 
-const messages = [];
 
-function Chat() {
+
+function Chat({generatedKey}) {
   const { user } = useAuth();
-  console.log(user);
+  
+  // ---------getting data--------//
 
+  const messagesRef = collection('messages');
+  const query = query(messagesRef, where('keygen', '==', generatedKey), orderBy('createdAt'))
+
+  const [messages] = useCollectionData(query, {idField: 'id'})
+
+  // ------------getting data---------//
+  const [msgCount, setMsgCount] = useState(0);
   const [chatWithUsername, setChatWithUsername] = useState("");
   const [msg, setMsg] = useState("");
-  const [msgArray, setMsgArray] = useState(messages);
-  const messageRef = useRef(null);
+  const lastMessageRef = useRef(null);
 
   const chatWithUsernameGen = () => {
     let randomValue = Math.floor(Math.random() * 10000);
     setChatWithUsername("username-" + randomValue);
   };
 
+  // -------------handling the submit----------//
   const handleMsgSubmit = (e) => {
     e.preventDefault();
     const d = new Date().toLocaleTimeString();
     if (msg) {
-      let tempMsgArray = [
-        ...msgArray,
-        { message: msg, from: "me", dateSent: d },
-      ];
-      setMsgArray(tempMsgArray);
+      const colRef = collection(db, 'messages');
+      addDoc(colRef, {message: msg, from: user.uid, createdAt: serverTimestamp(), keygen: generatedKey})
       setMsg("");
+      setMsgCount(msgCount+1)
     } else {
       setMsg("");
     }
   };
+  // -------------------handling the submit---------//
 
   useEffect(() => {
     chatWithUsernameGen();
   }, []);
 
   useEffect(() => {
-    messageRef.current?.scrollIntoView({ behavior: "smooth" });
-    console.log("hello wolrd");
-  }, [msgArray]);
+    lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
     <Flex w="full" flexDirection="column" h="100vh">
@@ -96,10 +108,10 @@ function Chat() {
           <StatLabel color="gray.500">Chatting with</StatLabel>
           <StatNumber>{chatWithUsername}</StatNumber>
         </Stat>
-        {msgArray.map((data, index) => {
-          return <ChatBubble key={index} {...data} />;
+        {messages.map((data) => {
+          return <ChatBubble key={data.id} {...data} />;
         })}
-        <div ref={messageRef} />
+        <div ref={lastMessageRef} />
       </Flex>
       <Flex
         as="form"
@@ -126,9 +138,10 @@ function Chat() {
     </Flex>
   );
 }
-
-function ChatBubble({ message, from, dateSent }) {
-  const isMe = from === "me";
+// just Done with chat bubble
+function ChatBubble({ message, uid, createdAt }) {
+  const {user} = useAuth();
+  const isMe = uid === user.uid;
   const alignment = isMe ? "flex-end" : "flex-start";
   const bottomRightRadius = isMe ? 0 : 32;
   const bottomLeftRadius = isMe ? 32 : 0;
@@ -148,7 +161,7 @@ function ChatBubble({ message, from, dateSent }) {
         {message}
       </Box>
       <Text color="gray" fontSize="xs">
-        {dateSent}
+        {createdAt}
       </Text>
     </VStack>
   );
