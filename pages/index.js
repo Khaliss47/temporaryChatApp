@@ -1,5 +1,5 @@
 import { FcGoogle } from "react-icons/fc";
-import { FaFacebook } from "react-icons/fa";
+import { FaTwitter } from "react-icons/fa";
 import { VStack, Center, Button, Text, Heading } from "@chakra-ui/react";
 import {
   FacebookAuthProvider,
@@ -8,20 +8,24 @@ import {
   signInWithRedirect,
 } from "firebase/auth";
 import { auth } from "../firebase";
+import Image from "next/image";
 
 function login() {
   return (
-    <Center height="100vh" background="#d6d6d6">
+    <Center height="100vh" background="#333">
       <VStack
         p="50px"
         border="1px"
         borderColor="gray.200"
-        rounded={6}
+        rounded='md'
         background="white"
+        bgGradient='linear(to-r, #4CA1AF, #C4E0E5)'
+        
       >
-        <Heading>Login With</Heading>
-        <Text>Use your Google or Facebook Account</Text>
+        <Image src='/h1.png' width='320px' height='150px' alt='logo' />
+        <Text fontFamily='poppins' >To Continue</Text>
         <Button
+        _focus={{outline: 0}}
           mt={5}
           width="100%"
           onClick={() => {
@@ -31,19 +35,20 @@ function login() {
           size="lg"
           colorScheme="gray"
         >
-          Google
+         
         </Button>
-        <Heading fontSize="23px">Or</Heading>
         <Button
+          _focus={{ outline: 0 }}
+
           width="100%"
-          leftIcon={<FaFacebook />}
+          leftIcon={<FaTwitter />}
           size="lg"
-          colorScheme="facebook"
+          colorScheme="twitter"
           onClick={() => {
             signInWithRedirect(auth, new FacebookAuthProvider());
           }}
         >
-          Facebook
+          
         </Button>
       </VStack>
     </Center>
